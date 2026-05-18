@@ -7,11 +7,6 @@ Each provider exposes one method, .run(), that takes:
   - a system prompt
 and returns a (reply_text, tool_trace) tuple.
 
-The provider handles its own tool-use loop internally and translates the
-provider-specific message shape on the way in and out, so callers never see
-Anthropic content blocks or OpenAI tool_calls. The neutral history makes it
-safe to switch providers mid-conversation.
-
 Two providers are supported:
   - AnthropicProvider — uses the native Anthropic Messages API.
   - OpenRouterProvider — uses the OpenAI SDK pointed at OpenRouter.
@@ -37,12 +32,6 @@ MAX_TOKENS            = 8192
 
 def _clean_reply(text: str) -> str:
     """Strip model chain-of-thought leakage before returning to the user.
-
-    Some open-weight models (DeepSeek-R1, Qwen3, Gemma, Nemotron …) write
-    their reasoning into the text response using <think> / <thinking> tags, or
-    just dump raw chain-of-thought prose when they run out of structured space.
-    Remove any tagged blocks; leave the prose for now — the main defence is
-    MAX_TOKENS being large enough that the model finishes its answer.
     """
     # Strip <think>…</think> and <thinking>…</thinking> (possibly multiline)
     text = re.sub(r"<think(?:ing)?>\s*.*?\s*</think(?:ing)?>", "", text,
@@ -96,8 +85,7 @@ def _dispatch_and_log(name: str, args: dict, db_path: Path,
     return content_str, ok
 
 
-# ────────────────────────────── Anthropic ──────────────────────────────
-
+# Claude
 
 class AnthropicProvider:
     name = "anthropic"
@@ -153,8 +141,7 @@ class AnthropicProvider:
         )
 
 
-# ─────────────────────────── OpenRouter ───────────────────────────
-
+# OpenRouter
 
 def _anthropic_tools_to_openai(tools: list[dict]) -> list[dict]:
     """Translate our shared TOOLS schema (Anthropic shape) to the OpenAI

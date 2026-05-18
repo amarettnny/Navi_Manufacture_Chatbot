@@ -4,18 +4,9 @@ FastAPI chat server.
 POST /chat with:
   {
     "messages": [{"role": "user"|"assistant", "content": "..."}, ...],
-    "provider": "anthropic" | "openrouter"   # optional, defaults to anthropic
+    "provider": "anthropic" | "openrouter"   
   }
-  → {"reply": str, "tool_trace": [...], "provider": str, "model": str}
-
-GET /health → liveness + which providers are configured.
-
-Environment:
-  ANTHROPIC_API_KEY   required for the Anthropic provider
-  ANTHROPIC_MODEL     optional, default claude-sonnet-4-5
-  OPENROUTER_API_KEY  required for the OpenRouter provider
-  OPENROUTER_MODEL    optional, default google/gemma-4-31b-it:free
-  CHATBOT_DB_PATH     optional, default ./manufacturing.db
+  -> {"reply": str, "tool_trace": [...], "provider": str, "model": str}
 
 Run with:
   uvicorn server:app --reload --port 8000
@@ -25,10 +16,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import Any
-
-# Load .env from the project root *before* any provider tries to read env vars.
-# Walks up from this file to find the closest .env; silent if missing (so the
-# server still runs when env vars are set the conventional way, e.g. in prod).
 from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 

@@ -308,7 +308,7 @@ def run_sql(query: str, limit: int = 500, db_path: Optional[Path] = None) -> dic
         return {"error": f"SQL error: {e}"}
 
 
-# ─────────────────── tool schema for Anthropic API ───────────────────
+# tool schema
 
 TOOLS = [
     {

@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Navi · Manufacturing Ops Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:          #0d0d0f;
+    --panel:       #111114;
+    --panel-2:     #18181c;
+    --panel-3:     #1f1f24;
+    --line:        #272729;
+    --line-2:      #38383d;
+    --ink:         #ebebeb;
+    --ink-2:       #8f8f97;
+    --ink-3:       #5a5a62;
+    --accent:      #f0c000;
+    --accent-dim:  #b89000;
+    --accent-glow: rgba(240,192,0,0.18);
+    --user-color:  #c4c4cc;
+    --error:       #c45b4a;
+    --display:     "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+    --body-font:   "Barlow", system-ui, sans-serif;
+    --mono:        "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body-font);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ───────────────────────────────────────────────── */
+  header {
+    position: relative;
+    overflow: hidden;
+    background: var(--panel);
+    border-bottom: 2px solid var(--accent);
+    padding: 0 28px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  /* Diagonal stripe decoration (right side of header) */
+  header::before,
+  header::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    right: 340px;
+    width: 14px;
+    background: var(--accent);
+    transform: skewX(-16deg);
+    opacity: 0.85;
+  }
+  header::after {
+    right: 362px;
+    width: 6px;
+    opacity: 0.45;
+  }
+
+  /* Hex badge */
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+  .hex-badge {
+    width: 42px; height: 42px;
+    flex-shrink: 0;
+  }
+  .brand-text {
+    line-height: 1.1;
+  }
+  .brand-name {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 26px;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+  .brand-name span { color: var(--accent); }
+  .brand-tagline {
+    font-family: var(--display);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  /* Spacer pushes controls to right */
+  .header-gap { flex: 1; }
+
+  .picker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1;
+  }
+  .picker label {
+    font-family: var(--display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .picker select {
+    background: var(--panel-2);
+    color: var(--ink);
+    border: 1px solid var(--line-2);
+    padding: 6px 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    outline: none;
+    border-radius: 0;
+    -webkit-appearance: none;
+    min-width: 190px;
+  }
+  .picker select:focus { border-color: var(--accent); }
+  .picker select option:disabled { color: var(--ink-3); }
+
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-2);
+    letter-spacing: 0.12em;
+    z-index: 1;
+  }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    flex-shrink: 0;
+  }
+  .dot.bad { background: var(--error); box-shadow: 0 0 8px var(--error); }
+
+  /* ── Layout ───────────────────────────────────────────────── */
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    min-height: 0;
+  }
+  @media (max-width: 860px) {
+    main { grid-template-columns: 1fr; }
+    aside { display: none; }
+    .composer { right: 0; }
+  }
+
+  /* ── Conversation column ──────────────────────────────────── */
+  .conv {
+    overflow-y: auto;
+    padding: 32px 40px 150px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-2) transparent;
+  }
+  .conv::-webkit-scrollbar { width: 8px; }
+  .conv::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 0; }
+
+  .turn { max-width: 740px; margin: 0 auto 32px; }
+  .turn .who {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .turn.user .who { color: var(--user-color); }
+  .turn.user .body { color: var(--user-color); }
+  .turn.assistant .who { color: var(--accent); }
+  .turn.assistant .who::before {
+    content: "▶ ";
+    font-size: 8px;
+    vertical-align: 1px;
+  }
+
+  .body { font-family: var(--body-font); font-size: 14.5px; line-height: 1.65; word-wrap: break-word; }
+  .body p { margin: 0 0 0.85em; }
+  .body p:last-child { margin-bottom: 0; }
+  .body code {
+    font-family: var(--mono);
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    padding: 1px 6px;
+    font-size: 0.88em;
+    color: var(--accent);
+  }
+  .body table {
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 13px;
+    font-family: var(--mono);
+  }
+  .body th, .body td {
+    border: 1px solid var(--line);
+    padding: 5px 12px;
+    text-align: left;
+  }
+  .body th {
+    background: var(--panel-2);
+    color: var(--accent);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 10px;
+  }
+  .body strong { color: var(--ink); font-weight: 600; }
+
+  /* ── Empty state ──────────────────────────────────────────── */
+  .empty {
+    max-width: 740px;
+    margin: 40px auto 0;
+  }
+
+  .empty-hero {
+    position: relative;
+    overflow: hidden;
+    background: var(--panel);
+    border: 1px solid var(--line-2);
+    border-left: 4px solid var(--accent);
+    padding: 32px 36px 28px;
+    margin-bottom: 28px;
+  }
+  /* Dot grid decoration */
+  .empty-hero::before {
+    content: "";
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 120px; height: 120px;
+    background-image: radial-gradient(circle, var(--line-2) 1px, transparent 1px);
+    background-size: 12px 12px;
+    opacity: 0.5;
+  }
+  /* Diagonal stripe accent */
+  .empty-hero::after {
+    content: "";
+    position: absolute;
+    top: 0; right: 48px; bottom: 0;
+    width: 10px;
+    background: var(--accent);
+    transform: skewX(-14deg);
+    opacity: 0.25;
+  }
+
+  .empty-eyebrow {
+    font-family: var(--display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .empty h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 38px;
+    line-height: 1.0;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .empty h1 em {
+    color: var(--accent);
+    font-style: normal;
+  }
+  .empty .sub {
+    font-family: var(--display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    position: relative;
+  }
+
+  .suggest-label {
+    font-family: var(--display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 10px;
+    padding-left: 2px;
+  }
+  .suggest-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+  .suggest {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 13px 16px;
+    cursor: pointer;
+    transition: background 0.1s, border-color 0.1s, color 0.1s;
+    color: var(--ink-2);
+    text-align: left;
+    font-family: var(--body-font);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .suggest:hover {
+    background: var(--panel-2);
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+  .suggest .num {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--accent);
+    margin-right: 10px;
+    line-height: 1;
+    vertical-align: -2px;
+  }
+
+  /* ── Tool trace sidebar ───────────────────────────────────── */
+  aside {
+    border-left: 1px solid var(--line);
+    background: var(--panel);
+    overflow-y: auto;
+    padding: 20px 16px;
+  }
+  aside .heading {
+    font-family: var(--display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  aside .heading::before {
+    content: "";
+    display: block;
+    width: 3px; height: 12px;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .trace-item {
+    border-left: 2px solid var(--accent-dim);
+    padding: 4px 0 8px 10px;
+    margin-bottom: 12px;
+    font-size: 11px;
+    font-family: var(--mono);
+  }
+  .trace-item.err { border-left-color: var(--error); }
+  .trace-item .tname { color: var(--accent); font-weight: 700; letter-spacing: 0.05em; }
+  .trace-item .targs { color: var(--ink-3); word-break: break-word; margin-top: 3px; }
+  .trace-item .tmeta { color: var(--ink-3); margin-top: 4px; font-size: 10px; }
+  .trace-empty {
+    color: var(--ink-3);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-style: italic;
+  }
+
+  /* ── Composer ─────────────────────────────────────────────── */
+  .composer {
+    position: fixed;
+    bottom: 0; left: 0; right: 300px;
+    padding: 18px 40px 24px;
+    background: linear-gradient(to top, var(--bg) 65%, rgba(13,13,15,0));
+  }
+  .composer .inner {
+    max-width: 740px;
+    margin: 0 auto;
+    display: flex;
+    border: 1px solid var(--line-2);
+    background: var(--panel);
+    transition: border-color 0.15s;
+  }
+  .composer .inner:focus-within {
+    border-color: var(--accent);
+  }
+  .composer textarea {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    color: var(--ink);
+    padding: 14px 18px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    resize: none;
+    outline: none;
+    line-height: 1.5;
+    min-height: 50px;
+    max-height: 200px;
+  }
+  .composer textarea::placeholder { color: var(--ink-3); }
+  .composer button {
+    background: transparent;
+    border: 0;
+    border-left: 1px solid var(--line-2);
+    color: var(--accent);
+    padding: 0 22px;
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+    flex-shrink: 0;
+  }
+  .composer button:hover:not(:disabled) {
+    background: var(--accent);
+    color: var(--bg);
+  }
+  .composer button:disabled { color: var(--ink-3); cursor: not-allowed; }
+
+  /* ── Typing indicator ─────────────────────────────────────── */
+  .typing {
+    display: inline-flex;
+    gap: 5px;
+    color: var(--accent);
+    font-size: 20px;
+    line-height: 1;
+  }
+  .typing span { animation: blink 1.2s infinite ease-in-out; }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink {
+    0%, 80%, 100% { opacity: 0.15; }
+    40% { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <!-- Hex badge with gear icon -->
+    <svg class="hex-badge" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="21,2 38,11.5 38,30.5 21,40 4,30.5 4,11.5"
+               fill="#f0c000" opacity="0.15" stroke="#f0c000" stroke-width="1.2"/>
+      <!-- Gear shape -->
+      <g transform="translate(21,21)" fill="#f0c000">
+        <circle r="5" fill="none" stroke="#f0c000" stroke-width="2"/>
+        <rect x="-1.5" y="-10" width="3" height="5" rx="0.5"/>
+        <rect x="-1.5" y="5"  width="3" height="5" rx="0.5"/>
+        <rect x="-10" y="-1.5" width="5" height="3" rx="0.5"/>
+        <rect x="5"  y="-1.5" width="5" height="3" rx="0.5"/>
+        <rect x="-8.2" y="-4.2" width="5" height="3" rx="0.5" transform="rotate(45 -8.2 -4.2) translate(0,-1)"/>
+        <rect x="3.2"  y="-4.2" width="5" height="3" rx="0.5" transform="rotate(-45 3.2 -4.2) translate(0,-1)"/>
+        <rect x="-8.2" y="1.2"  width="5" height="3" rx="0.5" transform="rotate(-45 -8.2 1.2)"/>
+        <rect x="3.2"  y="1.2"  width="5" height="3" rx="0.5" transform="rotate(45 3.2 1.2)"/>
+        <circle r="2.5" fill="#f0c000"/>
+      </g>
+    </svg>
+    <div class="brand-text">
+      <div class="brand-name">NAVI <span>MFG.</span></div>
+      <div class="brand-tagline">Manufacturing Ops Console</div>
+    </div>
+  </div>
+
+  <div class="header-gap"></div>
+
+  <div class="picker">
+    <label for="provider">Model</label>
+    <select id="provider">
+      <option value="anthropic">Claude (Anthropic)</option>
+      <option value="openrouter">OpenRouter (free)</option>
+    </select>
+  </div>
+
+  <div class="status">
+    <span class="dot" id="status-dot"></span>
+    <span id="status-text">connecting…</span>
+  </div>
+</header>
+
+<main>
+  <section class="conv" id="conv">
+    <div class="empty" id="empty">
+      <div class="empty-hero">
+        <div class="empty-eyebrow">▶ System Online</div>
+        <h1>Ask about <em>machines</em>,<br>routes &amp; parameters.</h1>
+        <p class="sub">Innovation · Efficiency · Quality in every production</p>
+      </div>
+      <div class="suggest-label">Quick queries</div>
+      <div class="suggest-grid" id="suggest"></div>
+    </div>
+  </section>
+
+  <aside>
+    <div class="heading">Tool Trace</div>
+    <div id="trace"><div class="trace-empty">No tool calls yet.</div></div>
+  </aside>
+</main>
+
+<div class="composer">
+  <div class="inner">
+    <textarea
+      id="input"
+      placeholder="e.g. show the route for product 607C11020S9K.3"
+      rows="1"></textarea>
+    <button id="send">Send ▶</button>
+  </div>
+</div>
+
+<script>
+const API = (() => {
+  const u = new URL(window.location.href);
+  return u.searchParams.get("api") || "http://localhost:8000";
+})();
+
+const SUGGESTIONS = [
+  "What machine types exist and how many of each?",
+  "Show the route for product 607C11020S9K.3.",
+  "Which products go through machine RAM 1?",
+  "What's the temperature setting on BAL 1 for product L3AY1000009K?",
+  "List the 5 products with the longest routes.",
+  "What parameters are tracked on the Ram step?",
+];
+
+const $ = (id) => document.getElementById(id);
+const conv = $("conv"), traceEl = $("trace"), empty = $("empty"),
+      sendBtn = $("send"), input = $("input");
+const messages = [];
+
+function renderSuggestions() {
+  const grid = $("suggest");
+  grid.innerHTML = "";
+  SUGGESTIONS.forEach((q, i) => {
+    const b = document.createElement("button");
+    b.className = "suggest";
+    b.innerHTML = `<span class="num">${String(i+1).padStart(2,"0")}</span>${q}`;
+    b.onclick = () => { input.value = q; send(); };
+    grid.appendChild(b);
+  });
+}
+
+async function checkHealth() {
+  try {
+    const r = await fetch(`${API}/health`);
+    const j = await r.json();
+    const sel = $("provider");
+    if (Array.isArray(j.providers)) {
+      sel.innerHTML = "";
+      for (const p of j.providers) {
+        const opt = document.createElement("option");
+        opt.value = p.name;
+        opt.textContent = p.ready
+          ? `${p.label} · ${p.model}`
+          : `${p.label} (no API key)`;
+        opt.disabled = !p.ready;
+        sel.appendChild(opt);
+      }
+      const firstReady = j.providers.find(p => p.ready);
+      if (firstReady) sel.value = firstReady.name;
+    }
+    $("status-dot").classList.toggle("bad", !j.db_present);
+    $("status-text").textContent = j.db_present
+      ? j.db_path.split("/").pop()
+      : "db missing";
+  } catch (e) {
+    $("status-dot").classList.add("bad");
+    $("status-text").textContent = "server offline";
+  }
+}
+
+function addTurn(role, body) {
+  if (empty.parentNode) empty.remove();
+  const t = document.createElement("div");
+  t.className = `turn ${role}`;
+  t.innerHTML = `<div class="who">${role === "user" ? "Operator" : "Assistant"}</div>
+                 <div class="body"></div>`;
+  t.querySelector(".body").innerHTML = body;
+  conv.appendChild(t);
+  conv.scrollTop = conv.scrollHeight;
+  return t.querySelector(".body");
+}
+
+function mdToHtml(s) {
+  s = s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  s = s.replace(/(^\|.*\|\n\|[-:| ]+\|\n(?:\|.*\|\n?)+)/gm, (block) => {
+    const lines = block.trim().split("\n");
+    const head = lines[0].split("|").slice(1, -1).map(c => c.trim());
+    const rows = lines.slice(2).map(l => l.split("|").slice(1, -1).map(c => c.trim()));
+    return "<table><thead><tr>" + head.map(h => `<th>${h}</th>`).join("") +
+           "</tr></thead><tbody>" +
+           rows.map(r => "<tr>" + r.map(c => `<td>${c}</td>`).join("") + "</tr>").join("") +
+           "</tbody></table>";
+  });
+  s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  s = s.split(/\n{2,}/).map(p => /^<table/.test(p) ? p : `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
+  return s;
+}
+
+function renderTrace(trace) {
+  if (!trace || !trace.length) {
+    traceEl.innerHTML = `<div class="trace-empty">No tool calls yet.</div>`;
+    return;
+  }
+  traceEl.innerHTML = trace.map(t => `
+    <div class="trace-item ${t.ok ? "" : "err"}">
+      <div class="tname">${t.tool}</div>
+      <div class="targs">${JSON.stringify(t.input)}</div>
+      <div class="tmeta">${t.ok ? `→ ${t.result_size} ${t.result_size === 1 ? "row" : "rows"}` : `error: ${t.error}`}</div>
+    </div>
+  `).join("");
+}
+
+async function send() {
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = "";
+  input.style.height = "auto";
+  addTurn("user", mdToHtml(text));
+  messages.push({ role: "user", content: text });
+
+  sendBtn.disabled = true;
+  const thinkingBody = addTurn("assistant",
+    `<span class="typing"><span>●</span><span>●</span><span>●</span></span>`);
+
+  try {
+    const r = await fetch(`${API}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages, provider: $("provider").value }),
+    });
+    if (!r.ok) {
+      const errText = await r.text().catch(() => "");
+      throw new Error(`HTTP ${r.status} — ${errText.slice(0, 200)}`);
+    }
+    const j = await r.json();
+    thinkingBody.innerHTML = mdToHtml(j.reply);
+    messages.push({ role: "assistant", content: j.reply });
+    renderTrace(j.tool_trace);
+  } catch (e) {
+    thinkingBody.innerHTML = `<p style="color: var(--error)">Request failed: ${e.message}.
+      Is the backend running on ${API}?</p>`;
+  } finally {
+    sendBtn.disabled = false;
+    conv.scrollTop = conv.scrollHeight;
+  }
+}
+
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+});
+input.addEventListener("input", () => {
+  input.style.height = "auto";
+  input.style.height = Math.min(input.scrollHeight, 200) + "px";
+});
+sendBtn.addEventListener("click", send);
+
+renderSuggestions();
+checkHealth();
+</script>
+</body>
+</html>

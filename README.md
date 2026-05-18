@@ -1,5 +1,6 @@
 # Navi_Manufacture_Chatbot
 
+Instructions to run it **locally**: 
 ## 1 Set up your API keys
 cp .env.example .env
    edit .env and paste in at least one of the following LLM API key:

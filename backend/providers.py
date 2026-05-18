@@ -26,10 +26,28 @@ from typing import Any, Protocol
 from anthropic import Anthropic
 from openai import OpenAI
 
+import re
+
 import queries
 
-MAX_TOOL_ITERATIONS = 8
+MAX_TOOL_ITERATIONS   = 20
 MAX_TOOL_RESULT_CHARS = 60_000
+MAX_TOKENS            = 8192
+
+
+def _clean_reply(text: str) -> str:
+    """Strip model chain-of-thought leakage before returning to the user.
+
+    Some open-weight models (DeepSeek-R1, Qwen3, Gemma, Nemotron …) write
+    their reasoning into the text response using <think> / <thinking> tags, or
+    just dump raw chain-of-thought prose when they run out of structured space.
+    Remove any tagged blocks; leave the prose for now — the main defence is
+    MAX_TOKENS being large enough that the model finishes its answer.
+    """
+    # Strip <think>…</think> and <thinking>…</thinking> (possibly multiline)
+    text = re.sub(r"<think(?:ing)?>\s*.*?\s*</think(?:ing)?>", "", text,
+                  flags=re.DOTALL | re.IGNORECASE)
+    return text.strip()
 
 
 class Provider(Protocol):
@@ -101,7 +119,7 @@ class AnthropicProvider:
         for _ in range(MAX_TOOL_ITERATIONS):
             resp = self.client.messages.create(
                 model=self.model,
-                max_tokens=2048,
+                max_tokens=MAX_TOKENS,
                 system=system,
                 tools=queries.TOOLS,
                 messages=messages,
@@ -110,7 +128,7 @@ class AnthropicProvider:
             tool_uses = [b for b in resp.content if b.type == "tool_use"]
             if not tool_uses:
                 text = "".join(b.text for b in resp.content if b.type == "text")
-                return text.strip(), trace
+                return _clean_reply(text), trace
 
             # Echo the assistant turn (with its tool_use blocks) back in.
             messages.append({"role": "assistant", "content": resp.content})
@@ -186,13 +204,13 @@ class OpenRouterProvider:
                 model=self.model,
                 messages=messages,
                 tools=self._openai_tools,
-                max_tokens=2048,
+                max_tokens=MAX_TOKENS,
             )
             msg = resp.choices[0].message
             tool_calls = msg.tool_calls or []
 
             if not tool_calls:
-                return (msg.content or "").strip(), trace
+                return _clean_reply(msg.content or ""), trace
 
             # Echo the assistant turn with its tool_calls.
             messages.append({
@@ -231,7 +249,6 @@ class OpenRouterProvider:
             trace,
         )
 
-
 # ─────────────────────────── factory ───────────────────────────
 
 
@@ -244,8 +261,7 @@ def make_provider(name: str) -> Provider:
 
 
 def available_providers() -> list[dict]:
-    """Report which providers can be used right now, based on env vars.
-    Useful for the frontend to grey out options that aren't configured."""
+    """Report which providers can be used right now, based on env vars."""
     return [
         {
             "name": "anthropic",
@@ -257,6 +273,6 @@ def available_providers() -> list[dict]:
             "name": "openrouter",
             "model": os.environ.get("OPENROUTER_MODEL", "google/gemma-4-31b-it:free"),
             "ready": bool(os.environ.get("OPENROUTER_API_KEY")),
-            "label": "Gemma 4 31B (OpenRouter, free)",
+            "label": "OpenRouter (free)",
         },
     ]

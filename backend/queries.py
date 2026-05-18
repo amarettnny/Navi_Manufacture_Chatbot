@@ -184,6 +184,24 @@ def aggregate_cycle_time(product_code: Optional[str] = None,
     return row
 
 
+def rank_machines_by_product_count(top_n: int = 20, db_path: Optional[Path] = None
+                                   ) -> list[dict]:
+    """Rank machines by the number of distinct products whose route includes them.
+    Use this for questions like 'which machines are used by the most products'."""
+    sql = (
+        "SELECT rs.machine_code, m.type AS machine_type, "
+        "COUNT(DISTINCT r.product_code) AS product_count "
+        "FROM route_steps rs "
+        "JOIN routes r   ON r.bom_code   = rs.bom_code "
+        "JOIN machines m ON m.code       = rs.machine_code "
+        "GROUP BY rs.machine_code "
+        "ORDER BY product_count DESC "
+        "LIMIT ?"
+    )
+    with _conn(db_path) as c:
+        return _rows(c.execute(sql, (top_n,)))
+
+
 def longest_routes(top_n: int = 10, db_path: Optional[Path] = None) -> list[dict]:
     """Products with the most steps in their route."""
     sql = ("SELECT r.product_code, r.bom_code, COUNT(rs.sequence) AS step_count, "
@@ -225,13 +243,69 @@ def find_parameter(product_code: str, key_substring: str,
         return _rows(c.execute(sql, (product_code, f"%{key_substring.lower()}%")))
 
 
-def list_parameter_keys(top_n: int = 30, db_path: Optional[Path] = None
-                        ) -> list[dict]:
-    """The most common parameter keys across the dataset."""
-    sql = ("SELECT key, COUNT(*) AS occurrences FROM parameters "
-           "GROUP BY key ORDER BY occurrences DESC LIMIT ?")
+def list_parameter_keys(top_n: int = 30, db_path: Optional[Path] = None) -> dict:
+    """The most common parameter keys across the entire dataset.
+    Always reports total_distinct_keys so the caller knows if the result is partial."""
     with _conn(db_path) as c:
-        return _rows(c.execute(sql, (top_n,)))
+        total = c.execute("SELECT COUNT(DISTINCT key) FROM parameters").fetchone()[0]
+        rows = _rows(c.execute(
+            "SELECT key, COUNT(*) AS occurrences FROM parameters "
+            "GROUP BY key ORDER BY occurrences DESC LIMIT ?",
+            (top_n,),
+        ))
+    return {
+        "total_distinct_keys": total,
+        "showing": len(rows),
+        "truncated": len(rows) < total,
+        "keys": rows,
+    }
+
+
+def run_sql(query: str, limit: int = 500, db_path: Optional[Path] = None) -> dict:
+    """Execute a read-only SQLite SELECT against the manufacturing database.
+
+    Use this for any aggregation, ranking, cross-table, or set-operation question
+    that the pre-built tools do not cover. Prefer the curated tools for common
+    lookups; reach for run_sql for novel or complex questions.
+
+    Full schema:
+      machines(code TEXT, name TEXT, type TEXT)
+        -- type values are Turkish: Ram, Kurutma, Yıkama, Kalite Kontrol, etc.
+      products(code TEXT, "group" TEXT)
+      routes(bom_code TEXT, product_code TEXT, version INTEGER)
+      route_steps(bom_code TEXT, sequence INTEGER, machine_code TEXT,
+                  cycle_time_seconds REAL, min_batch_qty REAL)
+      parameters(id INTEGER, product_code TEXT, bom_code TEXT,
+                 machine_code TEXT, sequence INTEGER,
+                 key TEXT, value REAL, value_text TEXT, unit TEXT)
+        -- key and value_text are Turkish; value holds numeric readings.
+        -- Join parameters→machines on machine_code to filter by machine type.
+
+    Only SELECT and WITH (CTE) queries are accepted. Returns up to `limit` rows.
+    If the query has a SQL error it is returned in the `error` field — correct
+    and retry.
+    """
+    q = query.strip().rstrip(";")
+    upper = q.upper()
+
+    if not upper.startswith(("SELECT", "WITH")):
+        return {"error": "Only SELECT/WITH queries are allowed."}
+
+    for kw in ("INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "CREATE",
+               "ATTACH", "DETACH", "PRAGMA", "REPLACE", "VACUUM"):
+        if kw in upper:
+            return {"error": f"Query contains forbidden keyword: {kw}"}
+
+    if ";" in q:
+        return {"error": "Multiple statements are not allowed."}
+
+    try:
+        with _conn(db_path) as c:
+            c.execute("PRAGMA query_only = ON")
+            rows = _rows(c.execute(f"SELECT * FROM ({q}) LIMIT ?", (limit,)))
+        return {"row_count": len(rows), "truncated": len(rows) == limit, "rows": rows}
+    except Exception as e:
+        return {"error": f"SQL error: {e}"}
 
 
 # ─────────────────── tool schema for Anthropic API ───────────────────
@@ -328,6 +402,22 @@ TOOLS = [
         },
     },
     {
+        "name": "rank_machines_by_product_count",
+        "description": (
+            "Rank all machines by the number of distinct products whose route includes them. "
+            "Use this for questions like 'which machines handle the most products', "
+            "'busiest machines', or 'most used machines'. Returns machine_code, "
+            "machine_type, and product_count, sorted descending."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "top_n": {"type": "integer", "description": "How many machines to return, default 20."},
+            },
+            "required": [],
+        },
+    },
+    {
         "name": "longest_routes",
         "description": "Return products with the most steps in their route, descending.",
         "input_schema": {
@@ -362,11 +452,43 @@ TOOLS = [
     },
     {
         "name": "list_parameter_keys",
-        "description": "Discover what parameter keys exist in the dataset, ordered by frequency. Helpful when the user asks 'what kinds of settings are tracked'.",
+        "description": (
+            "Dataset-wide survey of parameter keys ordered by frequency. "
+            "Always returns total_distinct_keys so you know if the result is partial. "
+            "Use only for broad orientation questions about the whole dataset. "
+            "For machine-specific or product-specific parameter questions use run_sql."
+        ),
         "input_schema": {
             "type": "object",
-            "properties": {"top_n": {"type": "integer"}},
+            "properties": {"top_n": {"type": "integer", "description": "Default 30."}},
             "required": [],
+        },
+    },
+    {
+        "name": "run_sql",
+        "description": (
+            "Execute a read-only SQLite SELECT against the manufacturing database. "
+            "Use this for any aggregation, ranking, filtering, or cross-table question "
+            "that the pre-built tools do not cover cleanly — for example: all parameter "
+            "keys for a specific machine type, average temperature settings across "
+            "products, products sharing a particular parameter value, etc. "
+            "Prefer the curated tools for simple lookups; use run_sql for everything else. "
+            "Schema: "
+            "machines(code, name, type) — type is Turkish (Ram, Kurutma, Yıkama…); "
+            "products(code, \"group\"); "
+            "routes(bom_code, product_code, version); "
+            "route_steps(bom_code, sequence, machine_code, cycle_time_seconds, min_batch_qty); "
+            "parameters(id, product_code, bom_code, machine_code, sequence, key, value, value_text, unit) "
+            "— key/value_text are Turkish, value is numeric. "
+            "If the query returns an error, read it and retry with a corrected query."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "A SQLite SELECT or WITH statement."},
+                "limit": {"type": "integer", "description": "Max rows to return, default 500."},
+            },
+            "required": ["query"],
         },
     },
 ]
@@ -375,6 +497,7 @@ TOOLS = [
 TOOL_FUNCTIONS = {
     "count_summary": count_summary,
     "list_machines": list_machines,
+    "rank_machines_by_product_count": rank_machines_by_product_count,
     "list_machine_types": list_machine_types,
     "list_products": list_products,
     "search_products": search_products,
@@ -386,6 +509,7 @@ TOOL_FUNCTIONS = {
     "get_step_parameters": get_step_parameters,
     "find_parameter": find_parameter,
     "list_parameter_keys": list_parameter_keys,
+    "run_sql": run_sql,
 }
 
 

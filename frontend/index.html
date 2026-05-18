@@ -9,23 +9,29 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:          #0d0d0f;
-    --panel:       #111114;
-    --panel-2:     #18181c;
-    --panel-3:     #1f1f24;
-    --line:        #272729;
-    --line-2:      #38383d;
-    --ink:         #ebebeb;
-    --ink-2:       #8f8f97;
-    --ink-3:       #5a5a62;
-    --accent:      #f0c000;
-    --accent-dim:  #b89000;
-    --accent-glow: rgba(240,192,0,0.18);
-    --user-color:  #c4c4cc;
-    --error:       #c45b4a;
+    /* Light theme — warm cream + steel blue header + gold accent */
+    --bg:          #f0ece4;
+    --panel:       #ffffff;
+    --panel-2:     #f7f4ee;
+    --line:        #e0dbd1;
+    --line-2:      #cdc8bc;
+    --ink:         #1c1916;
+    --ink-2:       #5c5850;
+    --ink-3:       #9a9488;
+    --accent:      #b87800;      /* dark gold — readable on light bg */
+    --accent-hi:   #f0c000;      /* bright gold for hovers/fills */
+    --accent-dim:  #7a5000;
+    --accent-glow: rgba(184,120,0,0.12);
+    --header-bg:   #1a4f7a;      /* steel blue — industrial sky */
+    --header-ink:  #f0f6fb;
+    --header-line: #143d61;
+    --green:       #27974a;
+    --green-glow:  rgba(39,151,74,0.18);
+    --user-color:  #2e2b26;
+    --error:       #b83030;
     --display:     "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
     --body-font:   "Barlow", system-ui, sans-serif;
-    --mono:        "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --mono:        "JetBrains Mono", ui-monospace, Menlo, monospace;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
@@ -40,187 +46,265 @@
     flex-direction: column;
   }
 
-  /* ── Header ───────────────────────────────────────────────── */
+  /* ── Icon button ──────────────────────────────────────────── */
+  .icon-btn {
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.12s, background 0.12s;
+    flex-shrink: 0;
+    border-radius: 2px;
+  }
+
+  /* ── Header (dark charcoal, like Salford nav) ─────────────── */
   header {
     position: relative;
     overflow: hidden;
-    background: var(--panel);
-    border-bottom: 2px solid var(--accent);
-    padding: 0 28px;
-    height: 64px;
+    background: var(--header-bg);
+    border-bottom: 2px solid var(--accent-hi);
+    padding: 0 12px 0 8px;
+    height: 62px;
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 10px;
+    flex-shrink: 0;
   }
+  header .icon-btn { color: rgba(255,255,255,0.45); }
+  header .icon-btn:hover { color: var(--accent-hi); background: rgba(255,255,255,0.10); }
 
-  /* Diagonal stripe decoration (right side of header) */
-  header::before,
-  header::after {
+  /* diagonal accent stripes */
+  header::before, header::after {
     content: "";
     position: absolute;
     top: 0; bottom: 0;
-    right: 340px;
-    width: 14px;
-    background: var(--accent);
+    right: 320px;
+    width: 12px;
+    background: var(--accent-hi);
     transform: skewX(-16deg);
-    opacity: 0.85;
+    opacity: 0.7;
+    pointer-events: none;
   }
-  header::after {
-    right: 362px;
-    width: 6px;
-    opacity: 0.45;
-  }
+  header::after { right: 340px; width: 5px; opacity: 0.35; }
 
-  /* Hex badge */
   .brand {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     flex-shrink: 0;
     z-index: 1;
   }
-  .hex-badge {
-    width: 42px; height: 42px;
-    flex-shrink: 0;
-  }
-  .brand-text {
-    line-height: 1.1;
-  }
+  .hex-badge { width: 38px; height: 38px; flex-shrink: 0; }
   .brand-name {
     font-family: var(--display);
     font-weight: 800;
-    font-size: 26px;
-    letter-spacing: 0.12em;
-    color: var(--ink);
+    font-size: 24px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
+    color: var(--header-ink);
+    line-height: 1.05;
   }
-  .brand-name span { color: var(--accent); }
+  .brand-name span { color: var(--accent-hi); }
   .brand-tagline {
     font-family: var(--display);
-    font-size: 10px;
+    font-size: 9.5px;
     font-weight: 600;
     letter-spacing: 0.28em;
     text-transform: uppercase;
-    color: var(--ink-3);
+    color: rgba(255,255,255,0.42);
   }
-
-  /* Spacer pushes controls to right */
   .header-gap { flex: 1; }
 
   .picker {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
     z-index: 1;
   }
   .picker label {
     font-family: var(--display);
     font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.24em;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--ink-3);
+    color: rgba(255,255,255,0.42);
   }
   .picker select {
-    background: var(--panel-2);
-    color: var(--ink);
-    border: 1px solid var(--line-2);
-    padding: 6px 10px;
+    background: #143d61;
+    color: var(--header-ink);
+    border: 1px solid #1e5a8a;
+    padding: 5px 10px;
     font-family: var(--mono);
     font-size: 11px;
     cursor: pointer;
     outline: none;
-    border-radius: 0;
     -webkit-appearance: none;
-    min-width: 190px;
+    min-width: 180px;
   }
-  .picker select:focus { border-color: var(--accent); }
-  .picker select option:disabled { color: var(--ink-3); }
+  .picker select:focus { border-color: var(--accent-hi); }
+  .picker select option:disabled { color: rgba(255,255,255,0.3); }
 
+  /* Status dot — three states */
   .status {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     font-family: var(--mono);
     font-size: 10px;
-    color: var(--ink-2);
-    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.42);
+    letter-spacing: 0.1em;
     z-index: 1;
   }
   .dot {
     width: 7px; height: 7px; border-radius: 50%;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.3);
+    transition: background 0.4s, box-shadow 0.4s;
+  }
+  .dot.ready   { background: var(--green); box-shadow: 0 0 7px var(--green-glow); }
+  .dot.thinking {
+    background: var(--accent-hi);
+    box-shadow: 0 0 8px rgba(240,192,0,0.4);
+    animation: dot-pulse 0.9s ease-in-out infinite;
+  }
+  @keyframes dot-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── Workspace ────────────────────────────────────────────── */
+  .workspace { flex: 1; display: flex; min-height: 0; overflow: hidden; }
+
+  /* ── History panel ────────────────────────────────────────── */
+  .history-panel {
+    width: 218px;
+    flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: width 0.22s ease;
+  }
+  .history-panel.closed { width: 0; }
+
+  .history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 10px 10px 14px;
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+    gap: 8px;
+  }
+  .history-title {
+    font-family: var(--display);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+  }
+  .history-title::before {
+    content: "";
+    display: block;
+    width: 3px; height: 10px;
     background: var(--accent);
-    box-shadow: 0 0 8px var(--accent);
     flex-shrink: 0;
   }
-  .dot.bad { background: var(--error); box-shadow: 0 0 8px var(--error); }
+  .new-chat-btn {
+    background: transparent;
+    border: 1px solid var(--line-2);
+    color: var(--ink-2);
+    cursor: pointer;
+    padding: 3px 8px;
+    font-family: var(--display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: color 0.12s, border-color 0.12s, background 0.12s;
+  }
+  .new-chat-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-glow); }
 
-  /* ── Layout ───────────────────────────────────────────────── */
-  main {
+  .history-list {
     flex: 1;
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    min-height: 0;
-  }
-  @media (max-width: 860px) {
-    main { grid-template-columns: 1fr; }
-    aside { display: none; }
-    .composer { right: 0; }
-  }
-
-  /* ── Conversation column ──────────────────────────────────── */
-  .conv {
     overflow-y: auto;
-    padding: 32px 40px 150px;
+    padding: 5px 0;
     scrollbar-width: thin;
     scrollbar-color: var(--line-2) transparent;
   }
-  .conv::-webkit-scrollbar { width: 8px; }
-  .conv::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 0; }
+  .history-item {
+    padding: 9px 14px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background 0.1s, border-color 0.1s;
+    overflow: hidden;
+  }
+  .history-item:hover  { background: var(--panel-2); }
+  .history-item.active { border-left-color: var(--accent); background: var(--panel-2); }
+  .hi-title { font-size: 12px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hi-time  { font-family: var(--mono); font-size: 10px; color: var(--ink-3); margin-top: 3px; white-space: nowrap; }
+  .history-empty { padding: 14px; font-family: var(--mono); font-size: 11px; color: var(--ink-3); font-style: italic; }
 
-  .turn { max-width: 740px; margin: 0 auto 32px; }
+  /* ── Conversation column ──────────────────────────────────── */
+  .conv-wrap { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+  .conv {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 40px 28px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-2) transparent;
+    /* Factory blueprint grid background.
+       To use a real photo instead, replace the background-image lines with:
+         background-image: linear-gradient(rgba(240,236,228,0.55), rgba(240,236,228,0.55)),
+                           url("../factory_background.png");
+       and set background-size: cover; background-position: center; */
+    background-image: linear-gradient(rgba(240,236,228,0.75), rgba(240,236,228,0.75)),
+                      url("../factory_background.png");
+    background-size: cover;
+    background-position: center;
+  }
+  .conv::-webkit-scrollbar { width: 8px; }
+  .conv::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
+
+  .turn { max-width: 740px; margin: 0 auto 30px; }
   .turn .who {
     font-family: var(--display);
     font-weight: 700;
-    font-size: 11px;
+    font-size: 10.5px;
     letter-spacing: 0.28em;
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 7px;
   }
-  .turn.user .who { color: var(--user-color); }
+  .turn.user .who  { color: var(--ink-3); }
   .turn.user .body { color: var(--user-color); }
   .turn.assistant .who { color: var(--accent); }
-  .turn.assistant .who::before {
-    content: "▶ ";
-    font-size: 8px;
-    vertical-align: 1px;
-  }
+  .turn.assistant .who::before { content: "▶ "; font-size: 7px; vertical-align: 1px; }
 
-  .body { font-family: var(--body-font); font-size: 14.5px; line-height: 1.65; word-wrap: break-word; }
+  .body { font-family: var(--body-font); font-size: 14.5px; line-height: 1.65; word-wrap: break-word; color: var(--ink); }
   .body p { margin: 0 0 0.85em; }
   .body p:last-child { margin-bottom: 0; }
   .body code {
     font-family: var(--mono);
     background: var(--panel-2);
     border: 1px solid var(--line);
-    padding: 1px 6px;
-    font-size: 0.88em;
-    color: var(--accent);
+    padding: 1px 5px;
+    font-size: 0.87em;
+    color: var(--accent-dim);
+    border-radius: 2px;
   }
-  .body table {
-    border-collapse: collapse;
-    margin: 10px 0;
-    font-size: 13px;
-    font-family: var(--mono);
-  }
-  .body th, .body td {
-    border: 1px solid var(--line);
-    padding: 5px 12px;
-    text-align: left;
-  }
+  .body table { border-collapse: collapse; margin: 10px 0; font-size: 13px; font-family: var(--mono); }
+  .body th, .body td { border: 1px solid var(--line); padding: 5px 12px; text-align: left; }
   .body th {
     background: var(--panel-2);
-    color: var(--accent);
+    color: var(--accent-dim);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -228,47 +312,65 @@
   }
   .body strong { color: var(--ink); font-weight: 600; }
 
-  /* ── Empty state ──────────────────────────────────────────── */
-  .empty {
-    max-width: 740px;
-    margin: 40px auto 0;
-  }
+  /* ── Typing indicator ─────────────────────────────────────── */
+  .typing { display: inline-flex; gap: 5px; color: var(--accent); font-size: 18px; line-height: 1; }
+  .typing span { animation: blink 1.2s infinite ease-in-out; }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink { 0%,80%,100%{opacity:0.15} 40%{opacity:1} }
 
+  /* ── Queued indicator ─────────────────────────────────────── */
+  .queued-msg {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-3);
+    padding: 8px 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--line-2);
+  }
+  .queued-icon { font-size: 13px; flex-shrink: 0; }
+
+  /* ── Empty state ──────────────────────────────────────────── */
+  .empty { max-width: 740px; margin: 40px auto 0; }
   .empty-hero {
     position: relative;
     overflow: hidden;
     background: var(--panel);
-    border: 1px solid var(--line-2);
+    border: 1px solid var(--line);
     border-left: 4px solid var(--accent);
-    padding: 32px 36px 28px;
-    margin-bottom: 28px;
+    padding: 30px 34px 26px;
+    margin-bottom: 26px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   }
-  /* Dot grid decoration */
   .empty-hero::before {
     content: "";
     position: absolute;
     bottom: 0; left: 0;
-    width: 120px; height: 120px;
+    width: 110px; height: 110px;
     background-image: radial-gradient(circle, var(--line-2) 1px, transparent 1px);
-    background-size: 12px 12px;
-    opacity: 0.5;
+    background-size: 11px 11px;
+    opacity: 0.6;
+    pointer-events: none;
   }
-  /* Diagonal stripe accent */
   .empty-hero::after {
     content: "";
     position: absolute;
-    top: 0; right: 48px; bottom: 0;
-    width: 10px;
-    background: var(--accent);
+    top: 0; right: 44px; bottom: 0;
+    width: 9px;
+    background: var(--accent-hi);
     transform: skewX(-14deg);
-    opacity: 0.25;
+    opacity: 0.15;
+    pointer-events: none;
   }
-
   .empty-eyebrow {
     font-family: var(--display);
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
-    letter-spacing: 0.3em;
+    letter-spacing: 0.32em;
     text-transform: uppercase;
     color: var(--accent);
     margin-bottom: 10px;
@@ -276,7 +378,7 @@
   .empty h1 {
     font-family: var(--display);
     font-weight: 800;
-    font-size: 38px;
+    font-size: 36px;
     line-height: 1.0;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -284,20 +386,16 @@
     margin-bottom: 10px;
     position: relative;
   }
-  .empty h1 em {
-    color: var(--accent);
-    font-style: normal;
-  }
+  .empty h1 em { color: var(--accent); font-style: normal; }
   .empty .sub {
     font-family: var(--display);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--ink-3);
     position: relative;
   }
-
   .suggest-label {
     font-family: var(--display);
     font-size: 10px;
@@ -308,15 +406,11 @@
     margin-bottom: 10px;
     padding-left: 2px;
   }
-  .suggest-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px;
-  }
+  .suggest-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
   .suggest {
     background: var(--panel);
     border: 1px solid var(--line);
-    padding: 13px 16px;
+    padding: 12px 15px;
     cursor: pointer;
     transition: background 0.1s, border-color 0.1s, color 0.1s;
     color: var(--ink-2);
@@ -324,50 +418,60 @@
     font-family: var(--body-font);
     font-size: 13px;
     line-height: 1.4;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
   }
-  .suggest:hover {
-    background: var(--panel-2);
-    border-color: var(--accent);
-    color: var(--ink);
-  }
+  .suggest:hover { background: var(--panel-2); border-color: var(--accent); color: var(--ink); }
   .suggest .num {
     font-family: var(--display);
     font-weight: 800;
-    font-size: 18px;
+    font-size: 17px;
     color: var(--accent);
-    margin-right: 10px;
+    margin-right: 9px;
     line-height: 1;
     vertical-align: -2px;
   }
 
-  /* ── Tool trace sidebar ───────────────────────────────────── */
+  /* ── Tool trace aside ─────────────────────────────────────── */
   aside {
+    width: 272px;
+    flex-shrink: 0;
     border-left: 1px solid var(--line);
     background: var(--panel);
-    overflow-y: auto;
-    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: width 0.22s ease;
   }
+  aside.closed { width: 0; }
+
   aside .heading {
     font-family: var(--display);
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
-    letter-spacing: 0.28em;
+    letter-spacing: 0.26em;
     text-transform: uppercase;
     color: var(--ink-3);
-    margin-bottom: 14px;
     border-bottom: 1px solid var(--line);
-    padding-bottom: 10px;
+    padding: 12px 8px 10px 14px;
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    background: var(--panel-2);
   }
   aside .heading::before {
     content: "";
     display: block;
-    width: 3px; height: 12px;
+    width: 3px; height: 10px;
     background: var(--accent);
     flex-shrink: 0;
   }
+  aside .heading .icon-btn { color: var(--ink-3); }
+  aside .heading .icon-btn:hover { color: var(--accent); background: var(--line); }
+  .heading-spacer { flex: 1; }
+
+  .trace-scroll { flex: 1; overflow-y: auto; padding: 14px; scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
   .trace-item {
     border-left: 2px solid var(--accent-dim);
     padding: 4px 0 8px 10px;
@@ -376,22 +480,18 @@
     font-family: var(--mono);
   }
   .trace-item.err { border-left-color: var(--error); }
-  .trace-item .tname { color: var(--accent); font-weight: 700; letter-spacing: 0.05em; }
+  .trace-item .tname { color: var(--accent-dim); font-weight: 700; letter-spacing: 0.05em; }
   .trace-item .targs { color: var(--ink-3); word-break: break-word; margin-top: 3px; }
   .trace-item .tmeta { color: var(--ink-3); margin-top: 4px; font-size: 10px; }
-  .trace-empty {
-    color: var(--ink-3);
-    font-family: var(--mono);
-    font-size: 11px;
-    font-style: italic;
-  }
+  .trace-empty { color: var(--ink-3); font-family: var(--mono); font-size: 11px; font-style: italic; }
 
   /* ── Composer ─────────────────────────────────────────────── */
   .composer {
-    position: fixed;
-    bottom: 0; left: 0; right: 300px;
-    padding: 18px 40px 24px;
-    background: linear-gradient(to top, var(--bg) 65%, rgba(13,13,15,0));
+    flex-shrink: 0;
+    padding: 14px 40px 20px;
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
   }
   .composer .inner {
     max-width: 740px;
@@ -399,23 +499,24 @@
     display: flex;
     border: 1px solid var(--line-2);
     background: var(--panel);
-    transition: border-color 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s;
   }
   .composer .inner:focus-within {
     border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
   }
   .composer textarea {
     flex: 1;
     background: transparent;
     border: 0;
     color: var(--ink);
-    padding: 14px 18px;
+    padding: 13px 17px;
     font-family: var(--mono);
     font-size: 13.5px;
     resize: none;
     outline: none;
     line-height: 1.5;
-    min-height: 50px;
+    min-height: 48px;
     max-height: 200px;
   }
   .composer textarea::placeholder { color: var(--ink-3); }
@@ -424,7 +525,7 @@
     border: 0;
     border-left: 1px solid var(--line-2);
     color: var(--accent);
-    padding: 0 22px;
+    padding: 0 20px;
     font-family: var(--display);
     font-size: 13px;
     font-weight: 800;
@@ -434,44 +535,30 @@
     transition: background 0.12s, color 0.12s;
     flex-shrink: 0;
   }
-  .composer button:hover:not(:disabled) {
-    background: var(--accent);
-    color: var(--bg);
-  }
-  .composer button:disabled { color: var(--ink-3); cursor: not-allowed; }
-
-  /* ── Typing indicator ─────────────────────────────────────── */
-  .typing {
-    display: inline-flex;
-    gap: 5px;
-    color: var(--accent);
-    font-size: 20px;
-    line-height: 1;
-  }
-  .typing span { animation: blink 1.2s infinite ease-in-out; }
-  .typing span:nth-child(2) { animation-delay: 0.2s; }
-  .typing span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes blink {
-    0%, 80%, 100% { opacity: 0.15; }
-    40% { opacity: 1; }
-  }
+  .composer button:hover { background: var(--accent); color: #fff; }
 </style>
 </head>
 <body>
 
 <header>
+  <button class="icon-btn" id="toggle-history" title="Toggle conversation history">
+    <svg width="18" height="14" viewBox="0 0 18 14" fill="currentColor">
+      <rect y="0" width="18" height="2" rx="1"/>
+      <rect y="6" width="18" height="2" rx="1"/>
+      <rect y="12" width="18" height="2" rx="1"/>
+    </svg>
+  </button>
+
   <div class="brand">
-    <!-- Hex badge with gear icon -->
     <svg class="hex-badge" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
       <polygon points="21,2 38,11.5 38,30.5 21,40 4,30.5 4,11.5"
-               fill="#f0c000" opacity="0.15" stroke="#f0c000" stroke-width="1.2"/>
-      <!-- Gear shape -->
+               fill="#f0c000" opacity="0.18" stroke="#f0c000" stroke-width="1.2"/>
       <g transform="translate(21,21)" fill="#f0c000">
         <circle r="5" fill="none" stroke="#f0c000" stroke-width="2"/>
         <rect x="-1.5" y="-10" width="3" height="5" rx="0.5"/>
-        <rect x="-1.5" y="5"  width="3" height="5" rx="0.5"/>
-        <rect x="-10" y="-1.5" width="5" height="3" rx="0.5"/>
-        <rect x="5"  y="-1.5" width="5" height="3" rx="0.5"/>
+        <rect x="-1.5" y="5"   width="3" height="5" rx="0.5"/>
+        <rect x="-10"  y="-1.5" width="5" height="3" rx="0.5"/>
+        <rect x="5"    y="-1.5" width="5" height="3" rx="0.5"/>
         <rect x="-8.2" y="-4.2" width="5" height="3" rx="0.5" transform="rotate(45 -8.2 -4.2) translate(0,-1)"/>
         <rect x="3.2"  y="-4.2" width="5" height="3" rx="0.5" transform="rotate(-45 3.2 -4.2) translate(0,-1)"/>
         <rect x="-8.2" y="1.2"  width="5" height="3" rx="0.5" transform="rotate(-45 -8.2 1.2)"/>
@@ -479,8 +566,8 @@
         <circle r="2.5" fill="#f0c000"/>
       </g>
     </svg>
-    <div class="brand-text">
-      <div class="brand-name">NAVI <span>MFG.</span></div>
+    <div>
+      <div class="brand-name">NAVI <span>Operations</span></div>
       <div class="brand-tagline">Manufacturing Ops Console</div>
     </div>
   </div>
@@ -499,35 +586,60 @@
     <span class="dot" id="status-dot"></span>
     <span id="status-text">connecting…</span>
   </div>
+
+  <button class="icon-btn" id="toggle-trace" title="Toggle tool trace">
+    <svg width="18" height="14" viewBox="0 0 18 14" fill="currentColor">
+      <rect x="10" y="0"  width="8" height="2" rx="1"/>
+      <rect x="10" y="6"  width="8" height="2" rx="1"/>
+      <rect x="10" y="12" width="8" height="2" rx="1"/>
+      <rect x="0"  y="0"  width="2" height="14" rx="1"/>
+    </svg>
+  </button>
 </header>
 
-<main>
-  <section class="conv" id="conv">
-    <div class="empty" id="empty">
-      <div class="empty-hero">
-        <div class="empty-eyebrow">▶ System Online</div>
-        <h1>Ask about <em>machines</em>,<br>routes &amp; parameters.</h1>
-        <p class="sub">Innovation · Efficiency · Quality in every production</p>
-      </div>
-      <div class="suggest-label">Quick queries</div>
-      <div class="suggest-grid" id="suggest"></div>
+<div class="workspace">
+
+  <nav class="history-panel closed" id="history-panel">
+    <div class="history-header">
+      <span class="history-title">History</span>
+      <button class="new-chat-btn" id="new-chat-btn">+ New</button>
     </div>
-  </section>
+    <div class="history-list" id="history-list">
+      <div class="history-empty">No conversations yet.</div>
+    </div>
+  </nav>
 
-  <aside>
-    <div class="heading">Tool Trace</div>
-    <div id="trace"><div class="trace-empty">No tool calls yet.</div></div>
-  </aside>
-</main>
-
-<div class="composer">
-  <div class="inner">
-    <textarea
-      id="input"
-      placeholder="e.g. show the route for product 607C11020S9K.3"
-      rows="1"></textarea>
-    <button id="send">Send ▶</button>
+  <div class="conv-wrap">
+    <section class="conv" id="conv">
+      <div class="empty" id="empty">
+        <div class="empty-hero">
+          <div class="empty-eyebrow">▶ System Online</div>
+          <h1>Ask about <em>machines</em>,<br>routes &amp; parameters.</h1>
+          <p class="sub">Innovation · Efficiency · Quality in every production</p>
+        </div>
+        <div class="suggest-label">Quick queries</div>
+        <div class="suggest-grid" id="suggest"></div>
+      </div>
+    </section>
+    <div class="composer">
+      <div class="inner">
+        <textarea id="input" placeholder="e.g. show the route for product 607C11020S9K.3" rows="1"></textarea>
+        <button id="send">Send ▶</button>
+      </div>
+    </div>
   </div>
+
+  <aside id="trace-aside">
+    <div class="heading">
+      Tool Trace
+      <div class="heading-spacer"></div>
+      <button class="icon-btn" id="close-trace" title="Close" style="font-size:13px">✕</button>
+    </div>
+    <div class="trace-scroll">
+      <div id="trace"><div class="trace-empty">No tool calls yet.</div></div>
+    </div>
+  </aside>
+
 </div>
 
 <script>
@@ -545,23 +657,134 @@ const SUGGESTIONS = [
   "What parameters are tracked on the Ram step?",
 ];
 
-const $ = (id) => document.getElementById(id);
-const conv = $("conv"), traceEl = $("trace"), empty = $("empty"),
-      sendBtn = $("send"), input = $("input");
-const messages = [];
+const STORAGE_KEY    = "navi_chat_history";
+const THINKING_HTML  = `<span class="typing"><span>●</span><span>●</span><span>●</span></span>`;
+const QUEUED_HTML    = `<span class="queued-msg"><span class="queued-icon">⏱</span>In queue — will process after current response…</span>`;
 
-function renderSuggestions() {
-  const grid = $("suggest");
-  grid.innerHTML = "";
-  SUGGESTIONS.forEach((q, i) => {
-    const b = document.createElement("button");
-    b.className = "suggest";
-    b.innerHTML = `<span class="num">${String(i+1).padStart(2,"0")}</span>${q}`;
-    b.onclick = () => { input.value = q; send(); };
-    grid.appendChild(b);
-  });
+const $ = id => document.getElementById(id);
+const conv    = $("conv");
+const traceEl = $("trace");
+const empty   = $("empty");
+const sendBtn = $("send");
+const input   = $("input");
+
+// ── State ──────────────────────────────────────────────────────
+let messages         = [];
+let currentTrace     = [];
+let currentSessionId = null;
+let providerReady    = false;
+
+// Queue state
+const requestQueue = [];   // [{sessionId, snapshot, provider, placeholder}]
+let currentItem    = null; // item currently being processed (shifted from queue)
+let isProcessing   = false;
+let thinkingBody   = null; // module-level — loadSession re-points this on navigate-back
+
+// ── Dot ────────────────────────────────────────────────────────
+function updateDot() {
+  const dot = $("status-dot");
+  const busy = isProcessing || requestQueue.length > 0;
+  dot.className = "dot" + (busy ? " thinking" : providerReady ? " ready" : "");
 }
 
+// ── Storage ────────────────────────────────────────────────────
+function loadAllSessions() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+function saveAllSessions(s) { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+function upsertSession(session) {
+  const all = loadAllSessions();
+  const i = all.findIndex(s => s.id === session.id);
+  if (i >= 0) all[i] = session; else all.unshift(session);
+  saveAllSessions(all);
+}
+
+// ── History panel ──────────────────────────────────────────────
+function timeAgo(iso) {
+  const m = Math.floor((Date.now() - new Date(iso)) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return new Date(iso).toLocaleDateString();
+}
+function esc(s) { return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function renderHistoryList() {
+  const list = $("history-list");
+  const sessions = loadAllSessions();
+  if (!sessions.length) { list.innerHTML = '<div class="history-empty">No conversations yet.</div>'; return; }
+  list.innerHTML = sessions.map(s => `
+    <div class="history-item${s.id === currentSessionId ? " active" : ""}" data-id="${s.id}">
+      <div class="hi-title">${esc(s.title)}</div>
+      <div class="hi-time">${timeAgo(s.timestamp)}</div>
+    </div>`).join("");
+  list.querySelectorAll(".history-item").forEach(el =>
+    el.addEventListener("click", () => loadSession(Number(el.dataset.id)))
+  );
+}
+
+function loadSession(id) {
+  const session = loadAllSessions().find(s => s.id === id);
+  if (!session) return;
+
+  conv.innerHTML = "";
+  messages         = [...session.messages];
+  currentTrace     = session.trace || [];
+  currentSessionId = id;
+
+  messages.forEach(m => {
+    const t = document.createElement("div");
+    t.className = `turn ${m.role}`;
+    t.innerHTML = `<div class="who">${m.role === "user" ? "Operator" : "Assistant"}</div><div class="body"></div>`;
+    t.querySelector(".body").innerHTML = mdToHtml(m.content);
+    conv.appendChild(t);
+  });
+
+  // Re-inject the in-flight thinking indicator and update its reference
+  if (currentItem && currentItem.sessionId === id) {
+    thinkingBody = addTurn("assistant", THINKING_HTML);
+    currentItem.placeholder = thinkingBody;
+  }
+
+  // Re-inject queued placeholders for any queued items belonging to this session
+  requestQueue.forEach(item => {
+    if (item.sessionId === id) {
+      item.placeholder = addTurn("assistant", QUEUED_HTML);
+    }
+  });
+
+  conv.scrollTop = conv.scrollHeight;
+  renderTrace(currentTrace);
+  renderHistoryList();
+}
+
+function startNewChat() {
+  // Persist current session state before clearing
+  if (messages.length && currentSessionId) {
+    const all = loadAllSessions();
+    const s = all.find(s => s.id === currentSessionId);
+    if (s) { s.messages = messages; s.trace = currentTrace; saveAllSessions(all); }
+  }
+  messages = []; currentTrace = []; currentSessionId = null;
+  conv.innerHTML = "";
+  conv.appendChild(empty);
+  renderTrace([]);
+  renderHistoryList();
+}
+
+// ── Toggles ────────────────────────────────────────────────────
+$("toggle-history").addEventListener("click", () => {
+  $("history-panel").classList.toggle("closed");
+  renderHistoryList();
+});
+function toggleTrace() { $("trace-aside").classList.toggle("closed"); }
+$("toggle-trace").addEventListener("click", toggleTrace);
+$("close-trace").addEventListener("click", toggleTrace);
+$("new-chat-btn").addEventListener("click", startNewChat);
+
+// ── Health ─────────────────────────────────────────────────────
 async function checkHealth() {
   try {
     const r = await fetch(`${API}/health`);
@@ -572,104 +795,178 @@ async function checkHealth() {
       for (const p of j.providers) {
         const opt = document.createElement("option");
         opt.value = p.name;
-        opt.textContent = p.ready
-          ? `${p.label} · ${p.model}`
-          : `${p.label} (no API key)`;
+        opt.textContent = p.ready ? `${p.label} · ${p.model}` : `${p.label} (no API key)`;
         opt.disabled = !p.ready;
         sel.appendChild(opt);
       }
-      const firstReady = j.providers.find(p => p.ready);
-      if (firstReady) sel.value = firstReady.name;
+      const first = j.providers.find(p => p.ready);
+      if (first) sel.value = first.name;
+      providerReady = !!first && j.db_present;
     }
-    $("status-dot").classList.toggle("bad", !j.db_present);
-    $("status-text").textContent = j.db_present
-      ? j.db_path.split("/").pop()
-      : "db missing";
-  } catch (e) {
-    $("status-dot").classList.add("bad");
+    $("status-text").textContent = j.db_present ? j.db_path.split("/").pop() : "db missing";
+  } catch {
     $("status-text").textContent = "server offline";
+    providerReady = false;
   }
+  updateDot();
 }
 
-function addTurn(role, body) {
+// ── Render helpers ─────────────────────────────────────────────
+function addTurn(role, html) {
   if (empty.parentNode) empty.remove();
   const t = document.createElement("div");
   t.className = `turn ${role}`;
-  t.innerHTML = `<div class="who">${role === "user" ? "Operator" : "Assistant"}</div>
-                 <div class="body"></div>`;
-  t.querySelector(".body").innerHTML = body;
+  t.innerHTML = `<div class="who">${role === "user" ? "Operator" : "Assistant"}</div><div class="body"></div>`;
+  t.querySelector(".body").innerHTML = html;
   conv.appendChild(t);
   conv.scrollTop = conv.scrollHeight;
   return t.querySelector(".body");
 }
 
 function mdToHtml(s) {
-  s = s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  s = s.replace(/(^\|.*\|\n\|[-:| ]+\|\n(?:\|.*\|\n?)+)/gm, (block) => {
+  s = s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  s = s.replace(/(^\|.*\|\n\|[-:| ]+\|\n(?:\|.*\|\n?)+)/gm, block => {
     const lines = block.trim().split("\n");
-    const head = lines[0].split("|").slice(1, -1).map(c => c.trim());
-    const rows = lines.slice(2).map(l => l.split("|").slice(1, -1).map(c => c.trim()));
-    return "<table><thead><tr>" + head.map(h => `<th>${h}</th>`).join("") +
-           "</tr></thead><tbody>" +
-           rows.map(r => "<tr>" + r.map(c => `<td>${c}</td>`).join("") + "</tr>").join("") +
-           "</tbody></table>";
+    const head  = lines[0].split("|").slice(1,-1).map(c=>c.trim());
+    const rows  = lines.slice(2).map(l=>l.split("|").slice(1,-1).map(c=>c.trim()));
+    return "<table><thead><tr>" + head.map(h=>`<th>${h}</th>`).join("") + "</tr></thead><tbody>" +
+           rows.map(r=>"<tr>"+r.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("") + "</tbody></table>";
   });
-  s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
-  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-  s = s.split(/\n{2,}/).map(p => /^<table/.test(p) ? p : `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
+  s = s.replace(/`([^`]+)`/g,"<code>$1</code>");
+  s = s.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>");
+  s = s.split(/\n{2,}/).map(p=>/^<table/.test(p)?p:`<p>${p.replace(/\n/g,"<br>")}</p>`).join("");
   return s;
 }
 
 function renderTrace(trace) {
-  if (!trace || !trace.length) {
-    traceEl.innerHTML = `<div class="trace-empty">No tool calls yet.</div>`;
-    return;
-  }
-  traceEl.innerHTML = trace.map(t => `
-    <div class="trace-item ${t.ok ? "" : "err"}">
+  currentTrace = trace || [];
+  if (!currentTrace.length) { traceEl.innerHTML = `<div class="trace-empty">No tool calls yet.</div>`; return; }
+  traceEl.innerHTML = currentTrace.map(t => `
+    <div class="trace-item${t.ok?"":" err"}">
       <div class="tname">${t.tool}</div>
       <div class="targs">${JSON.stringify(t.input)}</div>
-      <div class="tmeta">${t.ok ? `→ ${t.result_size} ${t.result_size === 1 ? "row" : "rows"}` : `error: ${t.error}`}</div>
-    </div>
-  `).join("");
+      <div class="tmeta">${t.ok?`→ ${t.result_size} ${t.result_size===1?"row":"rows"}`:`error: ${t.error}`}</div>
+    </div>`).join("");
 }
 
-async function send() {
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = "";
-  input.style.height = "auto";
-  addTurn("user", mdToHtml(text));
-  messages.push({ role: "user", content: text });
+// ── Request queue ──────────────────────────────────────────────
+function enqueueRequest(item) {
+  requestQueue.push(item);
+  updateDot();
+  if (!isProcessing) drainQueue();
+}
 
-  sendBtn.disabled = true;
-  const thinkingBody = addTurn("assistant",
-    `<span class="typing"><span>●</span><span>●</span><span>●</span></span>`);
+function drainQueue() {
+  if (!requestQueue.length) { isProcessing = false; updateDot(); return; }
+  isProcessing = true;
+  currentItem = requestQueue.shift();
+  runRequest(currentItem).then(drainQueue);
+}
+
+async function runRequest(item) {
+  const { sessionId, snapshot, provider } = item;
+  updateDot();
+
+  // If viewing this session, upgrade placeholder from queued → thinking
+  if (currentSessionId === sessionId) {
+    if (item.placeholder && item.placeholder.isConnected) {
+      item.placeholder.innerHTML = THINKING_HTML;
+    } else {
+      item.placeholder = addTurn("assistant", THINKING_HTML);
+    }
+    thinkingBody = item.placeholder;
+  }
 
   try {
     const r = await fetch(`${API}/chat`, {
-      method: "POST",
+      method:  "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages, provider: $("provider").value }),
+      body:    JSON.stringify({ messages: snapshot, provider }),
     });
     if (!r.ok) {
-      const errText = await r.text().catch(() => "");
-      throw new Error(`HTTP ${r.status} — ${errText.slice(0, 200)}`);
+      const err = await r.text().catch(() => "");
+      throw new Error(`HTTP ${r.status} — ${err.slice(0, 200)}`);
     }
     const j = await r.json();
-    thinkingBody.innerHTML = mdToHtml(j.reply);
-    messages.push({ role: "assistant", content: j.reply });
-    renderTrace(j.tool_trace);
+    const reply = j.reply;
+    const trace = j.tool_trace || [];
+
+    // Update localStorage for the session this request belongs to
+    const all = loadAllSessions();
+    const sess = all.find(s => s.id === sessionId);
+    if (sess) {
+      sess.messages.push({ role: "assistant", content: reply });
+      sess.trace = trace;
+      sess.timestamp = new Date().toISOString();
+      saveAllSessions(all);
+    }
+
+    // Update DOM only if user is currently viewing this session
+    if (currentSessionId === sessionId) {
+      if (item.placeholder && item.placeholder.isConnected) {
+        item.placeholder.innerHTML = mdToHtml(reply);
+      }
+      messages.push({ role: "assistant", content: reply });
+      renderTrace(trace);
+    }
+
+    renderHistoryList();
+
   } catch (e) {
-    thinkingBody.innerHTML = `<p style="color: var(--error)">Request failed: ${e.message}.
-      Is the backend running on ${API}?</p>`;
+    const errHtml = `<p style="color:var(--error)">Request failed: ${e.message}.<br>Is the backend running on ${API}?</p>`;
+    if (currentSessionId === sessionId && item.placeholder && item.placeholder.isConnected) {
+      item.placeholder.innerHTML = errHtml;
+    }
   } finally {
-    sendBtn.disabled = false;
-    conv.scrollTop = conv.scrollHeight;
+    if (currentSessionId === sessionId) conv.scrollTop = conv.scrollHeight;
+    currentItem = null;
   }
 }
 
-input.addEventListener("keydown", (e) => {
+// ── Send ───────────────────────────────────────────────────────
+function send() {
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = ""; input.style.height = "auto";
+
+  addTurn("user", mdToHtml(text));
+  messages.push({ role: "user", content: text });
+
+  // Create session on first message of a new chat
+  if (!currentSessionId) {
+    currentSessionId = Date.now();
+  }
+  const sessId = currentSessionId;
+
+  // Save the updated messages (including this user turn) to localStorage
+  upsertSession({
+    id:        sessId,
+    title:     messages[0].content.length > 60 ? messages[0].content.slice(0,57)+"…" : messages[0].content,
+    timestamp: new Date().toISOString(),
+    messages:  [...messages],
+    trace:     currentTrace,
+  });
+  renderHistoryList();
+
+  // Show queued or thinking placeholder depending on whether a request is already running
+  const placeholderHtml = (isProcessing || requestQueue.length > 0) ? QUEUED_HTML : THINKING_HTML;
+  const placeholder = addTurn("assistant", placeholderHtml);
+
+  // If this is immediately going to run, point thinkingBody at it
+  if (!isProcessing && !requestQueue.length) {
+    thinkingBody = placeholder;
+  }
+
+  enqueueRequest({
+    sessionId: sessId,
+    snapshot:  [...messages],   // snapshot including user turn
+    provider:  $("provider").value,
+    placeholder,
+  });
+}
+
+// ── Input events ───────────────────────────────────────────────
+input.addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
 });
 input.addEventListener("input", () => {
@@ -678,8 +975,20 @@ input.addEventListener("input", () => {
 });
 sendBtn.addEventListener("click", send);
 
-renderSuggestions();
+// ── Init ───────────────────────────────────────────────────────
+(function() {
+  const grid = $("suggest");
+  SUGGESTIONS.forEach((q, i) => {
+    const b = document.createElement("button");
+    b.className = "suggest";
+    b.innerHTML = `<span class="num">${String(i+1).padStart(2,"0")}</span>${q}`;
+    b.onclick = () => { input.value = q; send(); };
+    grid.appendChild(b);
+  });
+})();
+
 checkHealth();
+renderHistoryList();
 </script>
 </body>
 </html>

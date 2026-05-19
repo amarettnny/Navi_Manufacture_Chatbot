@@ -32,9 +32,9 @@ uvicorn server:app --reload --port 8000
 ### 3 Frontend (separate terminal)
 ```bash
 cd frontend
-python -m http.server 5173
+python -m http.server 8080
 ```
-**The chatbot frontend is deployed at http://localhost:5173**
+**The chatbot frontend is deployed at http://localhost:8080**
 
 ## Chatbot functionality
 

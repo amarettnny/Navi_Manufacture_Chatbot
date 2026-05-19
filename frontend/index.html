@@ -533,6 +533,19 @@
     flex-shrink: 0;
   }
   .composer button:hover { background: var(--accent); color: #fff; }
+
+  /* ── Watermark ────────────────────────────────────────────── */
+  .watermark {
+    max-width: 740px;
+    margin: 6px auto 0;
+    text-align: right;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+    opacity: 0.55;
+    user-select: none;
+  }
 </style>
 </head>
 <body>
@@ -610,7 +623,7 @@
     <section class="conv" id="conv">
       <div class="empty" id="empty">
         <div class="empty-hero">
-          <div class="empty-eyebrow">▶ System Online</div>
+          <div class="empty-eyebrow">▶ Navi Operations</div>
           <h1>Ask about <em>machines</em>,<br>routes &amp; parameters.</h1>
           <p class="sub">Innovation · Efficiency · Quality in every production</p>
         </div>
@@ -623,6 +636,7 @@
         <textarea id="input" placeholder="e.g. show the route for product 607C11020S9K.3" rows="1"></textarea>
         <button id="send">Send ▶</button>
       </div>
+      <div class="watermark">© Siyang Sun</div>
     </div>
   </div>
 
